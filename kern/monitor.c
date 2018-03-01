@@ -24,10 +24,7 @@ struct Command {
 static struct Command commands[] = {
 	{ "help", "Display this list of commands", mon_help },
 	{ "kerninfo", "Display information about the kernel", mon_kerninfo },
-<<<<<<< HEAD
-=======
 	{ "backtrace", "Display backtrace info", mon_backtrace },
->>>>>>> hdmmy/master
 };
 
 /***** Implementations of basic kernel monitor commands *****/
@@ -61,9 +58,7 @@ mon_kerninfo(int argc, char **argv, struct Trapframe *tf)
 int
 mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 {
-<<<<<<< HEAD
 	// Your code here.
-=======
 	uint32_t *ebp = (uint32_t *)read_ebp();
 
 	while(ebp[0] != 0)
@@ -82,7 +77,6 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 		ebp = (uint32_t *)(ebp[0]);
 	}
 
->>>>>>> hdmmy/master
 	return 0;
 }
 
@@ -139,12 +133,6 @@ monitor(struct Trapframe *tf)
 
 	cprintf("Welcome to the JOS kernel monitor!\n");
 	cprintf("Type 'help' for a list of commands.\n");
-
-<<<<<<< HEAD
-=======
-	// Just to test -- hdmmy
-	// cprintf("x %d, y %d, z %d", 11, 12, 13);
->>>>>>> hdmmy/master
 
 	while (1) {
 		buf = readline("K> ");

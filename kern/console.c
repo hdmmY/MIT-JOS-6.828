@@ -192,10 +192,6 @@ cga_putc(int c)
 	}
 
 	// What is the purpose of this?
-<<<<<<< HEAD
-=======
-	// Answer : to make crt_buf show the next line
->>>>>>> hdmmy/master
 	if (crt_pos >= CRT_SIZE) {
 		int i;
 
