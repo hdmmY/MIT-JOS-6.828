@@ -1,4 +1,4 @@
-#ifndef JOS_INC_MEMLAYOUT_H
+#ifndef JOS_INC_MEMLAYOUT_H 
 #define JOS_INC_MEMLAYOUT_H
 
 #ifndef __ASSEMBLER__
