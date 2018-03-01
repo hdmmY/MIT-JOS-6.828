@@ -115,6 +115,8 @@ monitor(struct Trapframe *tf)
 	cprintf("Welcome to the JOS kernel monitor!\n");
 	cprintf("Type 'help' for a list of commands.\n");
 
+	// Just to test -- hdmmy
+	// cprintf("x %d, y %d, z %d", 11, 12, 13);
 
 	while (1) {
 		buf = readline("K> ");
