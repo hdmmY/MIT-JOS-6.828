@@ -496,7 +496,6 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 	}
 
 	*ptentry = ppaddr | perm | PTE_P;
-	*(pgdir + PDX(va)) |= perm;
 
 	return 0;
 }
