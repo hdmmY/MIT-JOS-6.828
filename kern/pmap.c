@@ -112,6 +112,7 @@ boot_alloc(uint32_t n)
 			panic("boot_alloc allocate memory out of bound!");
 		}
 	}
+
 	return result;
 }
 
@@ -149,6 +150,8 @@ mem_init(void)
 
 	// Permissions: kernel R, user R
 	kern_pgdir[PDX(UVPT)] = PADDR(kern_pgdir) | PTE_U | PTE_P;
+	// cprintf("virtual address of kern_pgdir = 0x%x, PDX(kern_pgdir) = %d\n", 
+	// 	(uintptr_t)kern_pgdir, PDX((uintptr_t)kern_pgdir));
 
 	//////////////////////////////////////////////////////////////////////
 	// Allocate an array of npages 'struct PageInfo's and store it in 'pages'.
@@ -160,6 +163,12 @@ mem_init(void)
 	uint32_t page_size = sizeof(struct PageInfo) * npages;
 	pages = (struct PageInfo *)boot_alloc(page_size);
 	memset(pages, 0, page_size);
+	// cprintf("npages = %d, sizeof(struct PageInfo) = %d, page_size = 0x%x, PTSIZE = %x\n",
+	// 	npages, sizeof(struct PageInfo), page_size, PTSIZE);
+	// cprintf("paged_mem = PGSIZE * npages = %dMB\n",
+	// 	PGSIZE * npages / 1024 / 1024);
+	// cprintf("virtual address of pages = 0x%x, PDX(pages) = %d\n",
+	// 	(uintptr_t)pages, PDX((uintptr_t)pages));
 
 	//////////////////////////////////////////////////////////////////////
 	// Now that we've allocated the initial kernel data structures, we set
@@ -184,6 +193,8 @@ mem_init(void)
 	//    - pages itself -- kernel RW, user NONE
 	// Your code goes here:
 	boot_map_region(kern_pgdir, UPAGES, PTSIZE, PADDR(pages), PTE_U);
+	// cprintf("pages : entry = %d, map physical address PADDR(pages) = 0x%x to virtual address 0x%x\n",
+	// 	PDX(UPAGES), PADDR(pages), UPAGES);
 
 
 	//////////////////////////////////////////////////////////////////////
@@ -198,6 +209,8 @@ mem_init(void)
 	//     Permissions: kernel RW, user NONE
 	// Your code goes here:
 	boot_map_region(kern_pgdir, KSTACKTOP - KSTKSIZE, KSTKSIZE, PADDR(bootstack), PTE_W);
+	// cprintf("kernel stack : entry = %d, map physical address PADDR(bootstack) = 0x%x to virtual address 0x%x\n",
+	// 	PDX(KSTACKTOP - KSTKSIZE), PADDR(bootstack), KSTACKTOP - KSTKSIZE);
 
 	//////////////////////////////////////////////////////////////////////
 	// Map all of physical memory at KERNBASE.
@@ -208,6 +221,8 @@ mem_init(void)
 	// Permissions: kernel RW, user NONE
 	// Your code goes here:
 	boot_map_region(kern_pgdir, KERNBASE, 0xffffffff - KERNBASE, 0, PTE_W);
+	// cprintf("All of physical memory at KERNBASE : entry = %d, map physical address 0 to virtual address = 0x%x\n", 
+	// 	PDX(KERNBASE), KERNBASE);
 
 	// Check that the initial page directory has been set up correctly.
 	check_kern_pgdir();

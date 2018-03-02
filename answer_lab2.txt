@@ -1,0 +1,14 @@
+Q2:
+	entry		virtual address		points to logic
+	956			0xef000000			pages
+	959			0xefff8000			bootstack
+	960			0xf0000000			all of physical memory at KERNBASE
+
+03:
+	页保护机制实现了这一点，用户将不能访问未设置PTE_U的页（对于页目录和页表皆是如此）
+
+04:
+	pages 最多 4MB，每个 page 占 8 个字节，最多 512k 个 page，每个 page 包含了 4k 大小，所以最多 4k * 512k = 2g
+
+05:
+	2g
