@@ -45,6 +45,7 @@ void aligment_check_handler();
 void machine_check_handler();
 void SIMD_error_handler();
 
+static void unexpected_trap_handler(struct Trapframe *tf);
 
 static const char *trapname(int trapno)
 {
@@ -182,18 +183,19 @@ trap_dispatch(struct Trapframe *tf)
 {
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
-	if(tf->tf_trapno == T_PGFLT)
+	switch(tf->tf_trapno)
 	{
-		page_fault_handler(tf);
-	}
+		case T_PGFLT:
+			page_fault_handler(tf);
+			break;
 
-	// Unexpected trap: The user process or the kernel has a bug.
-	print_trapframe(tf);
-	if (tf->tf_cs == GD_KT)
-		panic("unhandled trap in kernel");
-	else {
-		env_destroy(curenv);
-		return;
+		case T_BRKPT:
+			monitor(tf);
+			break;
+
+		default:
+			unexpected_trap_handler(tf);
+			break;			
 	}
 }
 
@@ -258,3 +260,14 @@ page_fault_handler(struct Trapframe *tf)
 	env_destroy(curenv);
 }
 
+void 
+unexpected_trap_handler(struct Trapframe *tf)
+{
+	print_trapframe(tf);
+	if (tf->tf_cs == GD_KT)
+		panic("unhandled trap in kernel");
+	else {
+		env_destroy(curenv);
+		return;
+	}
+}
