@@ -64,6 +64,7 @@ TRAPHANDLER_NOEC(float_error_handler, T_FPERR)
 TRAPHANDLER(aligment_check_handler, T_ALIGN)
 TRAPHANDLER_NOEC(machine_check_handler, T_MCHK)
 TRAPHANDLER_NOEC(SIMD_error_handler, T_SIMDERR)
+TRAPHANDLER_NOEC(system_call_handler, T_SYSCALL)
 
 
 /*

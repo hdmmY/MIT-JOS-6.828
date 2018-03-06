@@ -44,6 +44,7 @@ void float_error_handler();
 void aligment_check_handler();
 void machine_check_handler();
 void SIMD_error_handler();
+void system_call_handler();
 
 static void unexpected_trap_handler(struct Trapframe *tf);
 
@@ -104,6 +105,7 @@ trap_init(void)
 	SETGATE(idt[T_ALIGN], 	0, GD_KT, aligment_check_handler, 			0);
 	SETGATE(idt[T_MCHK], 	0, GD_KT, machine_check_handler, 			0);
 	SETGATE(idt[T_SIMDERR], 0, GD_KT, SIMD_error_handler, 				0);
+	SETGATE(idt[T_SYSCALL], 1, GD_KT, system_call_handler, 				3);
 
 	// Per-CPU setup 
 	trap_init_percpu();
@@ -183,6 +185,8 @@ trap_dispatch(struct Trapframe *tf)
 {
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
+	int32_t ret;
+
 	switch(tf->tf_trapno)
 	{
 		case T_PGFLT:
@@ -191,6 +195,17 @@ trap_dispatch(struct Trapframe *tf)
 
 		case T_BRKPT:
 			monitor(tf);
+			break;
+
+		case T_SYSCALL:
+			ret = syscall(
+				tf->tf_regs.reg_eax,
+				tf->tf_regs.reg_edx,
+				tf->tf_regs.reg_ecx,
+				tf->tf_regs.reg_ebx,
+				tf->tf_regs.reg_edi,
+				tf->tf_regs.reg_esi);
+			tf->tf_regs.reg_eax = ret;
 			break;
 
 		default:
