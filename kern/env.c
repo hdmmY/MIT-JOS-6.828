@@ -373,6 +373,8 @@ load_icode(struct Env *e, uint8_t *binary)
 		panic("Load icode fail : Invalid Elf file!");
 	}
 
+	e->env_tf.tf_eip = elf->e_entry;
+
 	lcr3(PADDR(e->env_pgdir));
 
 	struct Proghdr *ph = (struct Proghdr *)((uint32_t)elf + elf->e_phoff);
