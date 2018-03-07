@@ -599,23 +599,23 @@ user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 	// LAB 3: Your code here.
 	uintptr_t start = (uintptr_t)ROUNDDOWN(va, PGSIZE);
 	uintptr_t end = (uintptr_t)ROUNDUP((size_t)va + len, PGSIZE);
+	uintptr_t origin = start;
 
 	pte_t *ptentry = NULL;
 
-	uintptr_t i;
-	for(i = start; i < end; i += PGSIZE)
+	for(; start < end; start += PGSIZE)
 	{
-		ptentry = pgdir_walk(env->env_pgdir, (void *)va, false);
+		ptentry = pgdir_walk(env->env_pgdir, (void *)start, false);
 
-		if(i > ULIM || ptentry == NULL || (*ptentry & perm) != perm)
+		if(start > ULIM || ptentry == NULL || ((*ptentry) & perm) != perm)
 		{
-			if(i == start)
+			if(start == origin)
 			{
 				user_mem_check_addr = (uintptr_t)va;
 			}
 			else
 			{
-				user_mem_check_addr = i;
+				user_mem_check_addr = start;
 			}
 			return -E_FAULT;
 		}

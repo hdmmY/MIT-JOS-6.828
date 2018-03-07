@@ -384,7 +384,7 @@ load_icode(struct Env *e, uint8_t *binary)
 	{
 		if(ph->p_type == ELF_PROG_LOAD)
 		{
-			region_alloc(e, (void *)ph->p_va, ph->p_filesz);
+			region_alloc(e, (void *)ph->p_va, ph->p_memsz);
 			memmove((void *)ph->p_va, (void *)elf + ph->p_offset, ph->p_filesz);
 			
 			if(ph->p_filesz < ph->p_memsz)
@@ -551,6 +551,6 @@ env_run(struct Env *e)
 	
 	lcr3(PADDR(curenv->env_pgdir));
 
-	env_pop_tf(&curenv->env_tf);
+	env_pop_tf(&(curenv->env_tf));
 }
 
