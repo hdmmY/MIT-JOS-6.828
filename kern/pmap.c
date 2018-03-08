@@ -227,7 +227,7 @@ mem_init(void)
 	// Permissions: kernel RW, user NONE
 	// Your code goes here:
 	boot_map_region(kern_pgdir, KERNBASE, 0xffffffff - KERNBASE, 0, PTE_W);
-
+	
 	// Initialize the SMP-related parts of the memory map
 	mem_init_mp();
 
@@ -278,7 +278,15 @@ mem_init_mp(void)
 	//     Permissions: kernel RW, user NONE
 	//
 	// LAB 4: Your code here:
+	uintptr_t start = KSTACKTOP - KSTKSIZE;
 
+	int i;
+	for(i = 0; i < NCPU; i++)
+	{
+		boot_map_region(kern_pgdir, start, KSTKSIZE, PADDR(percpu_kstacks[i]), PTE_W);
+
+		start -= KSTKSIZE + KSTKGAP;
+	}
 }
 
 // --------------------------------------------------------------
@@ -648,18 +656,18 @@ mmio_map_region(physaddr_t pa, size_t size)
 	//
 	// Your code here:
 	uintptr_t end = (uintptr_t)ROUNDUP(base + size, PGSIZE);
+	uintptr_t origin_base = base;
 
-	uintptr_t va;
-	for(va = base; va < end; va += PGSIZE, pa += PGSIZE)
+	for(; base < end; base += PGSIZE, pa += PGSIZE)
 	{
-		if(va > MMIOLIM - PGSIZE)
+		if(base > MMIOLIM - PGSIZE)
 		{
 			panic("The required mmio region is out of MMIOLIM!");
 		}
-		boot_map_region(kern_pgdir, va, PGSIZE, pa, PTE_PCD | PTE_PWT | PTE_W);
+		boot_map_region(kern_pgdir, base, PGSIZE, pa, PTE_PCD | PTE_PWT | PTE_W);
 	}
 
-	return (void *)base;
+	return (void *)origin_base;
 }
 
 static uintptr_t user_mem_check_addr;
@@ -896,16 +904,16 @@ check_kern_pgdir(void)
 	n = ROUNDUP(npages*sizeof(struct PageInfo), PGSIZE);
 	for (i = 0; i < n; i += PGSIZE)
 		assert(check_va2pa(pgdir, UPAGES + i) == PADDR(pages) + i);
-
+	
 	// check envs array (new test for lab 3)
 	n = ROUNDUP(NENV*sizeof(struct Env), PGSIZE);
 	for (i = 0; i < n; i += PGSIZE)
 		assert(check_va2pa(pgdir, UENVS + i) == PADDR(envs) + i);
-
+	
 	// check phys mem
 	for (i = 0; i < npages * PGSIZE; i += PGSIZE)
 		assert(check_va2pa(pgdir, KERNBASE + i) == i);
-
+	
 	// check kernel stack
 	// (updated in lab 4 to check per-CPU kernel stacks)
 	for (n = 0; n < NCPU; n++) {
