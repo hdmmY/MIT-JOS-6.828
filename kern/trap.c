@@ -30,6 +30,26 @@ struct Pseudodesc idt_pd = {
 	sizeof(idt) - 1, (uint32_t) idt
 };
 
+// Declare trap handlers
+void divider_error_handler();
+void debug_exception_handler();
+void NMI_handler();
+void breakpoint_handler();
+void overflow_handler();
+void bounds_check_handler();
+void illegal_opcode_handler();
+void device_navailable_handler();
+void double_fault_handler();
+void invalid_TSS_handler();
+void segment_npresent_handler();
+void stack_exception_handler();
+void general_protection_fault_handler();
+void pagefault_handler();
+void float_error_handler();
+void aligment_check_handler();
+void machine_check_handler();
+void SIMD_error_handler();
+void system_call_handler();
 
 static const char *trapname(int trapno)
 {
@@ -72,6 +92,25 @@ trap_init(void)
 	extern struct Segdesc gdt[];
 
 	// LAB 3: Your code here.
+	SETGATE(idt[T_DIVIDE],  0, GD_KT, divider_error_handler, 			0);
+	SETGATE(idt[T_DEBUG],   0, GD_KT, debug_exception_handler, 			0);
+	SETGATE(idt[T_NMI],     0, GD_KT, NMI_handler, 						0);
+	SETGATE(idt[T_BRKPT], 	0, GD_KT, breakpoint_handler, 				3);
+	SETGATE(idt[T_OFLOW], 	0, GD_KT, overflow_handler, 				0);
+	SETGATE(idt[T_BOUND], 	0, GD_KT, bounds_check_handler, 			0);
+	SETGATE(idt[T_ILLOP], 	0, GD_KT, illegal_opcode_handler, 			0);
+	SETGATE(idt[T_DEVICE], 	0, GD_KT, device_navailable_handler, 		0);
+	SETGATE(idt[T_DBLFLT], 	0, GD_KT, double_fault_handler, 			0);
+	SETGATE(idt[T_TSS], 	0, GD_KT, invalid_TSS_handler, 				0);
+	SETGATE(idt[T_SEGNP], 	0, GD_KT, segment_npresent_handler, 		0);
+	SETGATE(idt[T_STACK], 	0, GD_KT, stack_exception_handler, 			0);
+	SETGATE(idt[T_GPFLT], 	0, GD_KT, general_protection_fault_handler, 0);
+	SETGATE(idt[T_PGFLT], 	0, GD_KT, pagefault_handler, 				0);
+	SETGATE(idt[T_FPERR], 	0, GD_KT, float_error_handler, 				0);
+	SETGATE(idt[T_ALIGN], 	0, GD_KT, aligment_check_handler, 			0);
+	SETGATE(idt[T_MCHK], 	0, GD_KT, machine_check_handler, 			0);
+	SETGATE(idt[T_SIMDERR], 0, GD_KT, SIMD_error_handler, 				0);
+	SETGATE(idt[T_SYSCALL], 1, GD_KT, system_call_handler, 				3);
 
 	// Per-CPU setup 
 	trap_init_percpu();
@@ -176,11 +215,34 @@ trap_dispatch(struct Trapframe *tf)
 {
 	// Handle processor exceptions.
 	// LAB 3: Your code here.
+	int32_t ret;
+	switch(tf->tf_trapno)
+	{
+	case T_PGFLT:
+		page_fault_handler(tf);
+		break;
+
+	case T_BRKPT:
+		monitor(tf);
+		break;
+
+	case T_SYSCALL:
+		ret = syscall(
+			tf->tf_regs.reg_eax,
+			tf->tf_regs.reg_edx,
+			tf->tf_regs.reg_ecx,
+			tf->tf_regs.reg_ebx,
+			tf->tf_regs.reg_edi,
+			tf->tf_regs.reg_esi);
+		tf->tf_regs.reg_eax = ret;
+		break;
+	}
 
 	// Handle spurious interrupts
 	// The hardware sometimes raises these because of noise on the
 	// IRQ line or other reasons. We don't care.
-	if (tf->tf_trapno == IRQ_OFFSET + IRQ_SPURIOUS) {
+	if (tf->tf_trapno == IRQ_OFFSET + IRQ_SPURIOUS) 
+	{
 		cprintf("Spurious interrupt on irq 7\n");
 		print_trapframe(tf);
 		return;
@@ -194,7 +256,8 @@ trap_dispatch(struct Trapframe *tf)
 	print_trapframe(tf);
 	if (tf->tf_cs == GD_KT)
 		panic("unhandled trap in kernel");
-	else {
+	else 
+	{
 		env_destroy(curenv);
 		return;
 	}
@@ -271,6 +334,10 @@ page_fault_handler(struct Trapframe *tf)
 	// Handle kernel-mode page faults.
 
 	// LAB 3: Your code here.
+	if(tf->tf_cs && 0x01 == 0) 
+	{
+    	panic("page_fault in kernel mode, fault address %d\n", fault_va);
+    }
 
 	// We've already handled kernel-mode exceptions, so if we get here,
 	// the page fault happened in user mode.
@@ -312,4 +379,3 @@ page_fault_handler(struct Trapframe *tf)
 	print_trapframe(tf);
 	env_destroy(curenv);
 }
-
