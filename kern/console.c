@@ -192,7 +192,6 @@ cga_putc(int c)
 	}
 
 	// What is the purpose of this?
-	// Answer : to make crt_buf show the next line
 	if (crt_pos >= CRT_SIZE) {
 		int i;
 
